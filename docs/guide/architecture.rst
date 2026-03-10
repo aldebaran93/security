@@ -6,6 +6,13 @@ System Design Overview
 
 The PSMS is designed with a modular, layered architecture:
 
+.. figure:: ../_images/ProductionSecurityManagement.png
+  :alt: Production Security Management System Architecture
+  :width: 100%
+  :align: center
+  
+  **Figure 1:** System architecture showing layered components and data flow
+
 .. code-block:: text
 
     ┌─────────────────────────────────┐
