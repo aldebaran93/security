@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Basic Tutorial &#8212; Production Security Management 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/jquery.js?v=5d32c60e"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+    <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Advanced Configuration" href="tutorial_advanced.html" />
+    <link rel="prev" title="Production Workflow" href="workflow.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="basic-tutorial">
+<h1>Basic Tutorial<a class="headerlink" href="#basic-tutorial" title="Link to this heading"></a></h1>
+<section id="getting-your-first-vehicle-secured">
+<h2>Getting Your First Vehicle Secured<a class="headerlink" href="#getting-your-first-vehicle-secured" title="Link to this heading"></a></h2>
+<p>This tutorial walks you through securing one vehicle from production order to deployment.</p>
+</section>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>PSMS installed and running</p></li>
+<li><p>HSM configured (see <a class="reference internal" href="hsm_setup.html"><span class="doc">HSM Setup and Configuration</span></a>)</p></li>
+<li><p>PKS connection configured (see <a class="reference internal" href="pks_integration.html"><span class="doc">PKS Integration Guide</span></a>)</p></li>
+<li><p>Sample production order JSON file</p></li>
+</ul>
+</section>
+<section id="step-1-load-the-production-order">
+<h2>Step 1: Load the Production Order<a class="headerlink" href="#step-1-load-the-production-order" title="Link to this heading"></a></h2>
+<p><strong>Create a test order file</strong> (<code class="docutils literal notranslate"><span class="pre">test_order.json</span></code>):</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;vin&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TEST123456789012&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TestVehicle&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;production_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-03-10T09:00:00&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;ecus&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EngineControl&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;part_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ECU001&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;hw_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;sw_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;security_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pending&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Load into PSMS:</strong></p>
+<ol class="arabic simple">
+<li><p>Click <strong>File</strong> → <strong>Load Production Order</strong></p></li>
+<li><p>Browse to <code class="docutils literal notranslate"><span class="pre">test_order.json</span></code></p></li>
+<li><p>Click Open</p></li>
+<li><p>You should see the VIN populated and ECU listed</p></li>
+</ol>
+<p><strong>Verify:</strong> The ECU tree shows one row with your ECU details.</p>
+</section>
+<section id="step-2-request-keys-from-pks">
+<h2>Step 2: Request Keys from PKS<a class="headerlink" href="#step-2-request-keys-from-pks" title="Link to this heading"></a></h2>
+<p><strong>Send key request:</strong></p>
+<ol class="arabic simple">
+<li><p>Select the ECU in the tree (click on “EngineControl”)</p></li>
+<li><p>Click <strong>“1. Request Keys from PKS”</strong> button</p></li>
+<li><p>PSMS shows progress bar (spinning circle)</p></li>
+<li><p>Wait for confirmation dialog</p></li>
+</ol>
+<p><strong>What to expect:</strong></p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[10:00:00] INFO: Keys requested for EngineControl - VIN: TEST123456789012
+[10:00:02] INFO: Keys received for EngineControl
+[10:00:02] INFO: Key ID: KEY-20240310-001
+[10:00:02] INFO: Expiry: 2025-03-10
+</pre></div>
+</div>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a></p>
+<p>Dialog appears: <strong>“Success - Keys received for EngineControl - Key ID: KEY-20240310-001”</strong></p>
+<p>Click <strong>OK</strong>.</p>
+</section>
+<section id="step-3-inject-keys-into-ecu-simulated">
+<h2>Step 3: Inject Keys into ECU (Simulated)<a class="headerlink" href="#step-3-inject-keys-into-ecu-simulated" title="Link to this heading"></a></h2>
+<p>In this demo, we’ll simulate key injection:</p>
+<ol class="arabic simple">
+<li><p>Click <strong>“2. Inject Keys into ECU”</strong> button</p></li>
+<li><p>System shows progress (simulates 2-second operation)</p></li>
+<li><p>Confirmation dialog appears</p></li>
+</ol>
+<p><strong>Log shows:</strong></p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[10:01:00] INFO: Keys injected: KeyInjectionRecord(vin=&#39;TEST123456...&#39;)
+[10:01:00] INFO: Reported injection to PKS: Success
+Success - Keys injected successfully
+</pre></div>
+</div>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>Click <strong>OK</strong> in the dialog.</p>
+</section>
+<section id="step-4-prepare-secure-firmware-image">
+<h2>Step 4: Prepare Secure Firmware Image<a class="headerlink" href="#step-4-prepare-secure-firmware-image" title="Link to this heading"></a></h2>
+<p>Before doing this, create a test firmware file:</p>
+<p><strong>Create dummy firmware</strong> (<code class="docutils literal notranslate"><span class="pre">test_firmware.bin</span></code>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Windows - create 1MB test file</span>
+fsutil<span class="w"> </span>file<span class="w"> </span>createnew<span class="w"> </span>test_firmware.bin<span class="w"> </span><span class="m">1000000</span>
+
+<span class="c1"># Linux/macOS</span>
+dd<span class="w"> </span><span class="k">if</span><span class="o">=</span>/dev/zero<span class="w"> </span><span class="nv">of</span><span class="o">=</span>test_firmware.bin<span class="w"> </span><span class="nv">bs</span><span class="o">=</span>1M<span class="w"> </span><span class="nv">count</span><span class="o">=</span><span class="m">1</span>
+</pre></div>
+</div>
+<p><strong>Prepare image:</strong></p>
+<ol class="arabic simple">
+<li><p>Click <strong>“3. Prepare Secure Update”</strong> button</p></li>
+<li><p>Dialog opens for firmware selection</p></li>
+<li><p>Click <strong>Browse…</strong> button</p></li>
+<li><p>Select <code class="docutils literal notranslate"><span class="pre">test_firmware.bin</span></code></p></li>
+<li><p>Enter version: <code class="docutils literal notranslate"><span class="pre">1.0.1</span></code></p></li>
+<li><p>Click <strong>Prepare Image</strong></p></li>
+<li><p>Progress bar shows operation</p></li>
+<li><p>Confirmation dialog: <strong>“Secure image saved to secure_image_EngineControl_1.0.1.json”</strong></p></li>
+</ol>
+<p>The file is created in your working directory.</p>
+<p><strong>Verify:</strong> Check file creation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ls<span class="w"> </span>-la<span class="w"> </span>secure_image_*.json
+
+<span class="c1"># Or in Windows Explorer</span>
+<span class="c1">#   secure_image_EngineControl_1.0.1.json</span>
+</pre></div>
+</div>
+</section>
+<section id="step-5-flash-firmware-simulated">
+<h2>Step 5: Flash Firmware (Simulated)<a class="headerlink" href="#step-5-flash-firmware-simulated" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Click <strong>“4. Flash Secure Image”</strong> button</p></li>
+<li><p>Progress bar shows (~3 seconds)</p></li>
+<li><p>Success message appears: <strong>“Update flashed successfully”</strong></p></li>
+</ol>
+<p><strong>Log shows:</strong></p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[10:02:00] INFO: Secure update flashed successfully
+</pre></div>
+</div>
+</section>
+<section id="step-6-verify-installation">
+<h2>Step 6: Verify Installation<a class="headerlink" href="#step-6-verify-installation" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Click <strong>“5. Verify Installation”</strong> button</p></li>
+<li><p>Dialog shows: <strong>“Installation verification complete”</strong></p></li>
+</ol>
+</section>
+<section id="step-7-generate-audit-report">
+<h2>Step 7: Generate Audit Report<a class="headerlink" href="#step-7-generate-audit-report" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Click <strong>“Generate Audit Report”</strong> button</p></li>
+<li><p>Report is created with filename: <code class="docutils literal notranslate"><span class="pre">audit_report_20240310_100230.txt</span></code></p></li>
+<li><p>Success message: <strong>“Report saved to audit_report_20240310_100230.txt”</strong></p></li>
+</ol>
+<p><strong>View the report:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cat<span class="w"> </span>audit_report_*.txt
+
+<span class="c1"># Or open in text editor</span>
+</pre></div>
+</div>
+<p><strong>Report content example:</strong></p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Production Security Audit Report
+================================
+Generated: 2024-03-10 10:02:30
+Operator: YourUsername
+VIN: TEST123456789012
+
+HSM Status: Connected
+PKS Status: Connected
+
+ECU Configuration:
+------------------
+
+- Type: EngineControl, Part: ECU001, Security: 2
+
+Recent Operations:
+------------------
+</pre></div>
+</div>
+<p>Complete! Your vehicle has been secured from production to deployment.</p>
+</section>
+<section id="troubleshooting-this-tutorial">
+<h2>Troubleshooting This Tutorial<a class="headerlink" href="#troubleshooting-this-tutorial" title="Link to this heading"></a></h2>
+<p><strong>Keys Request Failed:</strong></p>
+<ol class="arabic simple">
+<li><p>Verify PKS is connected (green indicator)</p></li>
+<li><p>Check network connectivity</p></li>
+<li><p>Review certificates in PKS Configuration</p></li>
+</ol>
+<p><strong>Key Injection Failed:</strong></p>
+<ol class="arabic simple">
+<li><p>In demo mode, this should not fail</p></li>
+<li><p>If it does, check HSM connection</p></li>
+</ol>
+<p><strong>Image Preparation Failed:</strong></p>
+<ol class="arabic simple">
+<li><p>Verify firmware file exists and is readable</p></li>
+<li><p>Check HSM is connected</p></li>
+<li><p>Ensure you have write permissions</p></li>
+</ol>
+<p><strong>No Audit Report Created:</strong></p>
+<ol class="arabic simple">
+<li><p>Check you have write permissions in current directory</p></li>
+<li><p>Ensure timestamp in filename is valid</p></li>
+</ol>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Explore <a class="reference internal" href="tutorial_advanced.html"><span class="doc">Advanced Configuration</span></a> for real ECU integration</p></li>
+<li><p>Review <a class="reference internal" href="workflow.html"><span class="doc">Production Workflow</span></a> for production procedures</p></li>
+<li><p>Learn about <a class="reference internal" href="hsm_setup.html"><span class="doc">HSM Setup and Configuration</span></a> for security configuration</p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Production Security Management</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hsm_setup.html">HSM Setup and Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pks_integration.html">PKS Integration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflow.html">Production Workflow</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Basic Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#getting-your-first-vehicle-secured">Getting Your First Vehicle Secured</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-1-load-the-production-order">Step 1: Load the Production Order</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-2-request-keys-from-pks">Step 2: Request Keys from PKS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-3-inject-keys-into-ecu-simulated">Step 3: Inject Keys into ECU (Simulated)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-4-prepare-secure-firmware-image">Step 4: Prepare Secure Firmware Image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-5-flash-firmware-simulated">Step 5: Flash Firmware (Simulated)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-6-verify-installation">Step 6: Verify Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-7-generate-audit-report">Step 7: Generate Audit Report</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#troubleshooting-this-tutorial">Troubleshooting This Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_advanced.html">Advanced Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/modules.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ &amp; Common Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Additional Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References &amp; Resources</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="workflow.html" title="previous chapter">Production Workflow</a></li>
+      <li>Next: <a href="tutorial_advanced.html" title="next chapter">Advanced Configuration</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Security Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/guide/tutorial_basic.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Troubleshooting Guide &#8212; Production Security Management 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/jquery.js?v=5d32c60e"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+    <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Contributing" href="contributing.html" />
+    <link rel="prev" title="FAQ &amp; Common Questions" href="faq.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="troubleshooting-guide">
+<h1>Troubleshooting Guide<a class="headerlink" href="#troubleshooting-guide" title="Link to this heading"></a></h1>
+<section id="connection-issues">
+<h2>Connection Issues<a class="headerlink" href="#connection-issues" title="Link to this heading"></a></h2>
+<p><strong>Problem: “HSM connection failed”</strong></p>
+<p><strong>Symptoms:</strong></p>
+<ul class="simple">
+<li><p>Error message in GUI</p></li>
+<li><p>Red status indicator for HSM</p></li>
+<li><p>Operations fail with HSM error</p></li>
+</ul>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>Verify PKCS#11 library path:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Program Files</span><span class="se">\\</span><span class="s2">SoftHSM2</span><span class="se">\\</span><span class="s2">lib</span><span class="se">\\</span><span class="s2">softhsm2.dll&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+<li><p>Check library is correct bit depth (32/64):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>file<span class="w"> </span>softhsm2.dll<span class="w">  </span><span class="c1"># On Linux</span>
+</pre></div>
+</div>
+</li>
+<li><p>Verify HSM is powered on and connected</p></li>
+<li><p>Check PIN is correct (case-sensitive)</p></li>
+<li><p>Reinitialize HSM token:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>softhsm2-util<span class="w"> </span>--init-token<span class="w"> </span>--slot<span class="w"> </span><span class="m">0</span><span class="w"> </span>--label<span class="w"> </span><span class="s2">&quot;Test&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Try alternative slot (0, 1, 2, etc.)</p></li>
+</ol>
+<p>—</p>
+<p><strong>Problem: “Slot not found”</strong></p>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>List available slots:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>softhsm2-util<span class="w"> </span>--show-slots
+</pre></div>
+</div>
+</li>
+<li><p>Verify slot number matches configuration</p></li>
+<li><p>Ensure HSM is connected before PSMS startup</p></li>
+<li><p>Update PKCS#11 driver if available</p></li>
+</ol>
+<p>—</p>
+<p><strong>Problem: “Token not initialized”</strong></p>
+<p><strong>Solution:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reinitialize token</span>
+softhsm2-util<span class="w"> </span>--init-token<span class="w"> </span>--slot<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--label<span class="w"> </span><span class="s2">&quot;MyToken&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pin<span class="w"> </span><span class="m">1234</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--so-pin<span class="w"> </span><span class="m">1234</span>
+</pre></div>
+</div>
+<p>—</p>
+<p><strong>Problem: PIN verification failed</strong></p>
+<p><strong>Symptoms:</strong></p>
+<ul class="simple">
+<li><p>“CKR_PIN_INCORRECT” error</p></li>
+<li><p>Cannot authenticate to HSM</p></li>
+</ul>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>Verify correct PIN is entered</p></li>
+<li><p>Check PIN is not locked (too many failed attempts):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>softhsm2-util<span class="w"> </span>--show-slots
+</pre></div>
+</div>
+</li>
+<li><p>Reset token if locked:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>softhsm2-util<span class="w"> </span>--delete-token<span class="w"> </span>--token<span class="w"> </span>MyToken
+</pre></div>
+</div>
+</li>
+<li><p>Reinitialize with correct PIN</p></li>
+</ol>
+</section>
+<section id="pks-connection-issues">
+<h2>PKS Connection Issues<a class="headerlink" href="#pks-connection-issues" title="Link to this heading"></a></h2>
+<p><strong>Problem: “WSDL parsing error”</strong></p>
+<p><strong>Symptoms:</strong></p>
+<ul class="simple">
+<li><p>SOAP client initialization fails</p></li>
+<li><p>XML parsing exception</p></li>
+</ul>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>Verify WSDL is accessible:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>https://pks.example.com/KeyService?wsdl
+</pre></div>
+</div>
+</li>
+<li><p>Validate WSDL XML:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>xmllint<span class="w"> </span>pks.wsdl
+</pre></div>
+</div>
+</li>
+<li><p>Check for firewall/proxy blocking:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ping<span class="w"> </span>pks.example.com
+tracert<span class="w"> </span>pks.example.com
+</pre></div>
+</div>
+</li>
+<li><p>Test with cached WSDL file instead of URL</p></li>
+</ol>
+<p>—</p>
+<p><strong>Problem: “SSL verification failed”</strong></p>
+<p><strong>Symptoms:</strong></p>
+<ul class="simple">
+<li><p>“certificate_verify_failed” error</p></li>
+<li><p>Connection refused</p></li>
+</ul>
+<p><strong>Cause:</strong> Certificate validation failure</p>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>Verify server certificate:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>openssl<span class="w"> </span>s_client<span class="w"> </span>-connect<span class="w"> </span>pks.example.com:443
+</pre></div>
+</div>
+</li>
+<li><p>Check certificate expiration:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>openssl<span class="w"> </span>x509<span class="w"> </span>-noout<span class="w"> </span>-dates<span class="w"> </span>-in<span class="w"> </span>server.crt
+</pre></div>
+</div>
+</li>
+<li><p>Verify CA certificate is trusted:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>openssl<span class="w"> </span>verify<span class="w"> </span>-CAfile<span class="w"> </span>ca.pem<span class="w"> </span>server.crt
+</pre></div>
+</div>
+</li>
+<li><p>For testing only, disable verification (NOT PRODUCTION):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pks</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">verify</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># INSECURE!</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>—</p>
+<p><strong>Problem: “Client certificate rejected”</strong></p>
+<p><strong>Symptoms:</strong></p>
+<ul class="simple">
+<li><p>“CertificateError” during connection</p></li>
+<li><p>PKS returns 403 Forbidden</p></li>
+</ul>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>Verify client certificate is valid:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>openssl<span class="w"> </span>x509<span class="w"> </span>-text<span class="w"> </span>-noout<span class="w"> </span>-in<span class="w"> </span>client.crt
+</pre></div>
+</div>
+</li>
+<li><p>Check certificate is not expired:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>openssl<span class="w"> </span>x509<span class="w"> </span>-noout<span class="w"> </span>-dates<span class="w"> </span>-in<span class="w"> </span>client.crt
+</pre></div>
+</div>
+</li>
+<li><p>Verify certificate is signed by PKS CA:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>openssl<span class="w"> </span>verify<span class="w"> </span>-CAfile<span class="w"> </span>pks-ca.pem<span class="w"> </span>client.crt
+</pre></div>
+</div>
+</li>
+<li><p>Check private key matches certificate:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>openssl<span class="w"> </span>pkey<span class="w"> </span>-in<span class="w"> </span>client.key<span class="w"> </span>-pubout<span class="w"> </span>&gt;<span class="w"> </span>key.pub
+openssl<span class="w"> </span>x509<span class="w"> </span>-in<span class="w"> </span>client.crt<span class="w"> </span>-pubkey<span class="w"> </span>-noout<span class="w"> </span>&gt;<span class="w"> </span>cert.pub
+diff<span class="w"> </span>key.pub<span class="w"> </span>cert.pub
+</pre></div>
+</div>
+</li>
+<li><p>Re-request certificate from PKS administrator</p></li>
+</ol>
+</section>
+<section id="firmware-update-issues">
+<h2>Firmware Update Issues<a class="headerlink" href="#firmware-update-issues" title="Link to this heading"></a></h2>
+<p><strong>Problem: “Firmware file not found”</strong></p>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>Verify file exists:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ls<span class="w"> </span>-la<span class="w"> </span>firmware.bin
+dir<span class="w"> </span>/l<span class="w"> </span>firmware.bin<span class="w">  </span><span class="c1"># Windows</span>
+</pre></div>
+</div>
+</li>
+<li><p>Check file permissions (readable):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>chmod<span class="w"> </span><span class="m">644</span><span class="w"> </span>firmware.bin
+</pre></div>
+</div>
+</li>
+<li><p>Verify full path in dialog (not relative path)</p></li>
+</ol>
+<p>—</p>
+<p><strong>Problem: “Image verification failed”</strong></p>
+<p><strong>Symptoms:</strong></p>
+<ul class="simple">
+<li><p>Secure image cannot be verified</p></li>
+<li><p>Signature validation fails</p></li>
+</ul>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>Verify firmware file is not corrupted:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sha256sum<span class="w"> </span>firmware.bin
+</pre></div>
+</div>
+</li>
+<li><p>Check signature process:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Verify signature manually</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptography.hazmat.primitives</span><span class="w"> </span><span class="kn">import</span> <span class="n">hashes</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cryptography.hazmat.primitives.asymmetric</span><span class="w"> </span><span class="kn">import</span> <span class="n">padding</span>
+
+<span class="n">public_key</span><span class="o">.</span><span class="n">verify</span><span class="p">(</span><span class="n">signature</span><span class="p">,</span> <span class="n">metadata_bytes</span><span class="p">,</span> <span class="n">padding</span><span class="o">.</span><span class="n">PKCS1v15</span><span class="p">(),</span> <span class="n">hashes</span><span class="o">.</span><span class="n">SHA256</span><span class="p">())</span>
+</pre></div>
+</div>
+</li>
+<li><p>Ensure HSM signing key exists:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pkcs11-tool<span class="w"> </span>--list-objects
+</pre></div>
+</div>
+</li>
+<li><p>Regenerate image with valid HSM connection</p></li>
+</ol>
+<p>—</p>
+<p><strong>Problem: “ECU signature verification failed”</strong></p>
+<p><strong>Symptoms:</strong></p>
+<ul class="simple">
+<li><p>ECU rejects firmware update</p></li>
+<li><p>Flash operation fails</p></li>
+</ul>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>Verify ECU has correct public key:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ask ECU bootloader for public key hash</span>
+</pre></div>
+</div>
+</li>
+<li><p>Check firmware signature algorithm matches ECU expectations</p></li>
+<li><p>Verify timestamp in firmware is recent (not expired)</p></li>
+<li><p>Check ECU bootloader version supports verification</p></li>
+<li><p>Update ECU bootloader if available</p></li>
+</ol>
+</section>
+<section id="logging-and-audit">
+<h2>Logging and Audit<a class="headerlink" href="#logging-and-audit" title="Link to this heading"></a></h2>
+<p><strong>Problem: “Audit log files growing too large”</strong></p>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>Implement log rotation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">logging.handlers</span><span class="w"> </span><span class="kn">import</span> <span class="n">RotatingFileHandler</span>
+<span class="n">handler</span> <span class="o">=</span> <span class="n">RotatingFileHandler</span><span class="p">(</span><span class="s1">&#39;audit.log&#39;</span><span class="p">,</span> <span class="n">maxBytes</span><span class="o">=</span><span class="mi">10</span><span class="o">*</span><span class="mi">1024</span><span class="o">*</span><span class="mi">1024</span><span class="p">,</span> <span class="n">backupCount</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Archive old logs:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gzip<span class="w"> </span>audit.log.*<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>mv<span class="w"> </span>*.gz<span class="w"> </span>/archive/
+</pre></div>
+</div>
+</li>
+<li><p>Implement external logging:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging.handlers</span>
+<span class="n">syslog_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">SysLogHandler</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s1">&#39;syslog.server.com&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>—</p>
+<p><strong>Problem: “Cannot export audit log”</strong></p>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>Check write permissions:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ls<span class="w"> </span>-la<span class="w"> </span>/path/to/export/
+touch<span class="w"> </span>/path/to/export/test.txt
+</pre></div>
+</div>
+</li>
+<li><p>Verify sufficient disk space:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>df<span class="w"> </span>-h
+</pre></div>
+</div>
+</li>
+<li><p>Check file name for special characters</p></li>
+<li><p>Try exporting to different location</p></li>
+</ol>
+</section>
+<section id="performance-issues">
+<h2>Performance Issues<a class="headerlink" href="#performance-issues" title="Link to this heading"></a></h2>
+<p><strong>Problem: “PSMS running slowly”</strong></p>
+<p><strong>Diagnosis:</strong></p>
+<ol class="arabic">
+<li><p>Check CPU usage:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>top<span class="w"> </span>-p<span class="w"> </span><span class="k">$(</span>pgrep<span class="w"> </span>python<span class="k">)</span><span class="w">  </span><span class="c1"># Linux</span>
+taskmgr<span class="w">  </span><span class="c1"># Windows</span>
+</pre></div>
+</div>
+</li>
+<li><p>Monitor memory usage</p></li>
+<li><p>Check network latency:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ping<span class="w"> </span>pks.example.com
+<span class="nb">time</span><span class="w"> </span>curl<span class="w"> </span>https://pks.example.com/KeyService?wsdl
+</pre></div>
+</div>
+</li>
+</ol>
+<p><strong>Solutions:</strong></p>
+<ul class="simple">
+<li><p>Reduce HSM session creation frequency</p></li>
+<li><p>Cache PKS responses</p></li>
+<li><p>Use connection pooling for SOAP</p></li>
+<li><p>Run PSMS on dedicated machine</p></li>
+<li><p>Upgrade network bandwidth</p></li>
+</ul>
+<p>—</p>
+<p><strong>Problem: “Key request takes too long”</strong></p>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>Measure network latency:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ping<span class="w"> </span>-c<span class="w"> </span><span class="m">5</span><span class="w"> </span>pks.example.com
+</pre></div>
+</div>
+</li>
+<li><p>Check PKS server load</p></li>
+<li><p>Verify network connectivity:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mtr<span class="w"> </span>pks.example.com
+</pre></div>
+</div>
+</li>
+<li><p>Consider request batching</p></li>
+<li><p>Implement caching for frequently requested keys</p></li>
+</ol>
+</section>
+<section id="database-file-issues">
+<h2>Database/File Issues<a class="headerlink" href="#database-file-issues" title="Link to this heading"></a></h2>
+<p><strong>Problem: “Cannot load production order”</strong></p>
+<p><strong>Symptoms:</strong></p>
+<ul class="simple">
+<li><p>“JSON parse error”</p></li>
+<li><p>File not found</p></li>
+</ul>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>Validate JSON syntax:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>json.tool<span class="w"> </span>order.json
+</pre></div>
+</div>
+</li>
+<li><p>Check file encoding (UTF-8):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>file<span class="w"> </span>order.json
+</pre></div>
+</div>
+</li>
+<li><p>Verify all required fields are present:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">required</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;vin&#39;</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="s1">&#39;ecus&#39;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">required</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">order</span>
+</pre></div>
+</div>
+</li>
+<li><p>Check file permissions</p></li>
+</ol>
+<p>—</p>
+<p><strong>Problem: “Database corruption”</strong></p>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>Restore from backup</p></li>
+<li><p>Verify database integrity:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sqlite3<span class="w"> </span>production.db<span class="w"> </span><span class="s2">&quot;PRAGMA integrity_check;&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Rebuild database if corrupted</p></li>
+</ol>
+</section>
+<section id="security-issues">
+<h2>Security Issues<a class="headerlink" href="#security-issues" title="Link to this heading"></a></h2>
+<p><strong>Problem: “Unauthorized access to HSM”</strong></p>
+<p><strong>Solution:</strong></p>
+<ol class="arabic">
+<li><p>Restrict file permissions:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>chmod<span class="w"> </span><span class="m">600</span><span class="w"> </span>client.key
+chmod<span class="w"> </span><span class="m">600</span><span class="w"> </span>hsm.conf
+</pre></div>
+</div>
+</li>
+<li><p>Implement access control</p></li>
+<li><p>Enable HSM audit logging</p></li>
+<li><p>Monitor HSM access logs</p></li>
+</ol>
+<p>—</p>
+<p><strong>Problem: “Certificate compromise suspected”</strong></p>
+<p><strong>Solution:</strong></p>
+<ol class="arabic simple">
+<li><p>Revoke compromised certificate immediately</p></li>
+<li><p>Request new certificate from CA</p></li>
+<li><p>Update all PSMS instances</p></li>
+<li><p>Audit all operations since compromise</p></li>
+<li><p>Re-sign all firmware images with new key</p></li>
+</ol>
+</section>
+<section id="getting-help">
+<h2>Getting Help<a class="headerlink" href="#getting-help" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Check Logs First:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tail<span class="w"> </span>-f<span class="w"> </span>psms.log
+tail<span class="w"> </span>-f<span class="w"> </span>audit.log
+</pre></div>
+</div>
+</li>
+<li><p><strong>Test Individual Components:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test HSM</span>
+pkcs11-tool<span class="w"> </span>--list-objects
+
+<span class="c1"># Test PKS</span>
+curl<span class="w"> </span>https://pks.example.com/KeyService?wsdl
+
+<span class="c1"># Test Network</span>
+ping<span class="w"> </span>pks.example.com
+</pre></div>
+</div>
+</li>
+<li><p><strong>Enable Debug Logging:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Consult Related Guides:</strong></p>
+<ul class="simple">
+<li><p><a class="reference internal" href="hsm_setup.html"><span class="doc">HSM Setup and Configuration</span></a></p></li>
+<li><p><a class="reference internal" href="pks_integration.html"><span class="doc">PKS Integration Guide</span></a></p></li>
+<li><p><a class="reference internal" href="architecture.html"><span class="doc">Architecture</span></a></p></li>
+</ul>
+</li>
+<li><p><strong>Contact Support:</strong></p>
+<ul class="simple">
+<li><p>Check <a class="reference internal" href="faq.html"><span class="doc">FAQ &amp; Common Questions</span></a></p></li>
+<li><p>Review system logs</p></li>
+<li><p>Describe error exactly as it appears</p></li>
+</ul>
+</li>
+</ol>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Production Security Management</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hsm_setup.html">HSM Setup and Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pks_integration.html">PKS Integration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflow.html">Production Workflow</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_basic.html">Basic Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_advanced.html">Advanced Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/modules.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ &amp; Common Questions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Troubleshooting Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#connection-issues">Connection Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pks-connection-issues">PKS Connection Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#firmware-update-issues">Firmware Update Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#logging-and-audit">Logging and Audit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#performance-issues">Performance Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#database-file-issues">Database/File Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#security-issues">Security Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-help">Getting Help</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Additional Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References &amp; Resources</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="faq.html" title="previous chapter">FAQ &amp; Common Questions</a></li>
+      <li>Next: <a href="contributing.html" title="next chapter">Contributing</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Security Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/guide/troubleshooting.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

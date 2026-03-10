@@ -1,0 +1,173 @@
+@startuml ProductionSecurityManagement
+
+!define ABSTRACT abstract
+!define ENTITY entity
+
+' Color scheme
+skinparam classBackgroundColor #E1F5E1
+skinparam classBorderColor #2E7D32
+skinparam arrowColor #1565C0
+
+' ============================================================================
+' Data Models (Dataclasses)
+' ============================================================================
+
+class ECUConfig {
+    - ecu_type: str
+    - part_number: str
+    - hardware_version: str
+    - software_version: str
+    - security_level: int
+    - requires_secure_boot: bool
+    - requires_key_injection: bool
+}
+
+class ProductionOrder {
+    - vin: str
+    - model: str
+    - production_date: datetime
+    - ecus: List[Dict[str, Any]]
+    - status: str
+}
+
+class KeyInjectionRecord {
+    - vin: str
+    - ecu_id: str
+    - key_type: str
+    - key_id: str
+    - injection_time: datetime
+    - operator: str
+    - status: str
+    - signature: Optional[str]
+}
+
+' ============================================================================
+' HSM Manager
+' ============================================================================
+
+class HSMManager {
+    - pkcs11_lib_path: str
+    - slot: int
+    - pin: str
+    - lib: pkcs11.lib
+    - session: Session
+    - logger: Logger
+    --
+    + connect(): bool
+    + disconnect(): void
+    + generate_key_pair(key_label: str, key_type: str, key_size: int): Dict[str, Any]
+    + sign_data(key_label: str, data: bytes, mechanism: Mechanism): bytes
+    + get_public_key(key_label: str): bytes
+}
+
+' ============================================================================
+' Production Key Server Client
+' ============================================================================
+
+class ProductionKeyServerClient {
+    - wsdl_url: str
+    - client: zeep.Client
+    - logger: Logger
+    - session: requests.Session
+    - transport: Transport
+    - signature: Signature
+    --
+    + connect(): bool
+    + request_ecu_keys(vin: str, ecu_type: str, ecu_serial: str): Dict[str, Any]
+    + report_key_injection(vin: str, ecu_serial: str, key_id: str, status: str): bool
+}
+
+' ============================================================================
+' Secure Update Manager
+' ============================================================================
+
+class SecureUpdateManager {
+    - hsm: HSMManager
+    - logger: Logger
+    --
+    + prepare_secure_image(firmware_path: str, version: str, ecu_type: str): Dict[str, Any]
+    + verify_secure_image(secure_image: Dict[str, Any]): bool
+}
+
+' ============================================================================
+' GUI Application
+' ============================================================================
+
+class ProductionSecurityGUI {
+    - root: tk.Tk
+    - log_queue: queue.Queue
+    - hsm: HSMManager
+    - pks: ProductionKeyServerClient
+    - update_manager: SecureUpdateManager
+    - current_vin: tk.StringVar
+    - current_operator: tk.StringVar
+    - progress: ttk.Progressbar
+    - ecu_tree: ttk.Treeview
+    - hsm_status: ttk.Label
+    - pks_status: ttk.Label
+    - log_text: scrolledtext.ScrolledText
+    --
+    + __init__(root: tk.Tk): void
+    + setup_logging(): void
+    + setup_menu(): void
+    + setup_ui(): void
+    + configure_hsm(): void
+    + configure_pks(): void
+    + add_ecu_dialog(): void
+    + prepare_update_dialog(): void
+    + request_keys_threaded(): void
+    + inject_keys_threaded(): void
+    + flash_update_threaded(): void
+    + load_production_order(): void
+    + export_audit_log(): void
+    + key_management_dialog(): void
+    + generate_report(): void
+    + load_ecus(): void
+    + remove_ecu(): void
+    + verify_installation(): void
+    + process_log_queue(): void
+}
+
+' ============================================================================
+' Relationships and Dependencies
+' ============================================================================
+
+ProductionSecurityGUI --> HSMManager : "uses\n(hsm)"
+ProductionSecurityGUI --> ProductionKeyServerClient : "uses\n(pks)"
+ProductionSecurityGUI --> SecureUpdateManager : "uses\n(update_manager)"
+ProductionSecurityGUI --> ECUConfig : "displays"
+ProductionSecurityGUI --> ProductionOrder : "loads"
+ProductionSecurityGUI --> KeyInjectionRecord : "creates"
+
+SecureUpdateManager --> HSMManager : "depends on"
+
+ProductionKeyServerClient --> KeyInjectionRecord : "reports"
+
+note right of HSMManager
+    Manages Hardware Security Module
+    - PKCS#11 tokenization
+    - Key generation and storage
+    - Cryptographic signing
+end note
+
+note right of ProductionKeyServerClient
+    Production Key Server Integration
+    - SOAP/XML Web Services
+    - WS-Security with mutual TLS
+    - Key distribution
+end note
+
+note right of SecureUpdateManager
+    Secure firmware operations
+    - Image preparation with signatures
+    - Verification before flashing
+end note
+
+note right of ProductionSecurityGUI
+    Main application orchestrator
+    - User interface (Tkinter)
+    - Threading for long operations
+    - Audit logging and reporting
+end note
+
+@enduml

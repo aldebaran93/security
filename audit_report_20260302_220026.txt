@@ -1,0 +1,16 @@
+
+Production Security Audit Report
+================================
+Generated: 2026-03-02 22:00:26.117567
+Operator: leots
+VIN: 
+
+HSM Status: Disconnected
+PKS Status: Disconnected
+
+ECU Configuration:
+------------------
+
+
+Recent Operations:
+------------------

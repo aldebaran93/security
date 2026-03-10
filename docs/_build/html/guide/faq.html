@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>FAQ &amp; Common Questions &#8212; Production Security Management 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/jquery.js?v=5d32c60e"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+    <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Troubleshooting Guide" href="troubleshooting.html" />
+    <link rel="prev" title="pcks_pks_kms module" href="../api/pcks_pks_kms.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="faq-common-questions">
+<h1>FAQ &amp; Common Questions<a class="headerlink" href="#faq-common-questions" title="Link to this heading"></a></h1>
+<section id="general-questions">
+<h2>General Questions<a class="headerlink" href="#general-questions" title="Link to this heading"></a></h2>
+<p><strong>Q: What is the main purpose of PSMS?</strong></p>
+<p>A: PSMS secures automotive production by managing cryptographic keys and ensuring only authorized firmware updates reach vehicles. It prevents unauthorized modifications to vehicle software.</p>
+<p><strong>Q: Can PSMS work without an HSM?</strong></p>
+<p>A: For testing/development, yes (using SoftHSM). For production, a physical HSM is recommended for security compliance and tamper protection.</p>
+<p><strong>Q: How long does it take to secure one vehicle?</strong></p>
+<p>A: Typically 10-15 minutes including key request, injection, firmware update, and verification. This varies with network latency and ECU count.</p>
+<p><strong>Q: Does PSMS support multiple ECUs?</strong></p>
+<p>A: Yes, PSMS handles vehicles with 2-20+ ECUs. Process each ECU sequentially or in parallel depending on your production line setup.</p>
+</section>
+<section id="hsm-questions">
+<h2>HSM Questions<a class="headerlink" href="#hsm-questions" title="Link to this heading"></a></h2>
+<p><strong>Q: What if I lose my HSM PIN?</strong></p>
+<p>A: The PIN cannot be recovered. You must reinitialize the HSM token, which will erase all stored keys. Maintain secure backups of HSM configuration.</p>
+<p><strong>Q: Can I use multiple HSMs?</strong></p>
+<p>A: Not simultaneously. PSMS connects to one HSM at a time. You can switch HSMs by reconfiguring the PKCS#11 library path.</p>
+<p><strong>Q: How long do HSM keys last?</strong></p>
+<p>A: Production typically rotate keys annually. Set reminders for certificate renewal before expiration.</p>
+<p><strong>Q: Is SoftHSM suitable for production?</strong></p>
+<p>A: No, SoftHSM stores keys unencrypted on disk. Use only for development/testing. For production, use certified hardware HSM (Thales, Gemalto, etc).</p>
+</section>
+<section id="pks-questions">
+<h2>PKS Questions<a class="headerlink" href="#pks-questions" title="Link to this heading"></a></h2>
+<p><strong>Q: What if the PKS is unreachable?</strong></p>
+<p>A: PSMS cannot request keys. Implement fallback PKS or queue requests for retry. Maintain list of alternative PKS servers.</p>
+<p><strong>Q: Can I request keys for vehicles not in PKS database?</strong></p>
+<p>A: No, PKS validates all VINs. Contact PKS administrator to register new VINs before production runs.</p>
+<p><strong>Q: How are vehicle-specific keys generated?</strong></p>
+<p>A: The PKS uses the VIN as input to deterministic key derivation. Same VIN always produces same keys (within same time period).</p>
+<p><strong>Q: What if a vehicle’s keys expire?</strong></p>
+<p>A: Request new keys from PKS. The new keys will be bound to the same VIN with extended expiry date.</p>
+</section>
+<section id="security-questions">
+<h2>Security Questions<a class="headerlink" href="#security-questions" title="Link to this heading"></a></h2>
+<p><strong>Q: Are keys visible in memory?</strong></p>
+<p>A: Keys in HSM never leave the device. Keys transmitted over network are encrypted. PSMS memory usage follows cryptographic best practices.</p>
+<p><strong>Q: Can firmware be downgraded?</strong></p>
+<p>A: The system signs firmware with timestamps. ECUs can be configured to reject older firmware versions.</p>
+<p><strong>Q: What happens if someone steals a vehicle?</strong></p>
+<p>A: Each vehicle has unique keys bound to its VIN. A stolen vehicle’s keys cannot be used in unmodified form. OTA updates use PKS verification.</p>
+<p><strong>Q: How is the audit trail protected?</strong></p>
+<p>A: Audit logs are written to disk immediately with append-only semantics. Consider external audit log archival for compliance.</p>
+</section>
+<section id="troubleshooting-questions">
+<h2>Troubleshooting Questions<a class="headerlink" href="#troubleshooting-questions" title="Link to this heading"></a></h2>
+<p><strong>Q: PSMS crashes when connecting to HSM?</strong></p>
+<p>A: Check PKCS#11 library path is correct. Verify library architecture (32/64-bit) matches Python. Update PKCS#11 library.</p>
+<p><strong>Q: PKS certificate validation fails?</strong></p>
+<p>A: Ensure CA certificate is provided. Verify certificate chain is complete. Check system time is correct (affects certificate validity).</p>
+<p><strong>Q: Firmware verification fails after flashing?</strong></p>
+<p>A: Confirm firmware file is not corrupted. Verify ECU bootloader supports verification. Check signature algorithm matches ECU expectations.</p>
+<p><strong>Q: Audit log file grows too large?</strong></p>
+<p>A: Archive old logs regularly. Implement log rotation (keep last 30 days). Use external logging service for large deployments.</p>
+</section>
+<section id="production-questions">
+<h2>Production Questions<a class="headerlink" href="#production-questions" title="Link to this heading"></a></h2>
+<p><strong>Q: How do I scale to high-volume production?</strong></p>
+<p>A: Multi-threading lets PSMS handle ~4-6 vehicles/hour with single thread. Parallel deployment uses multiple PSMS instances with centralized PKS.</p>
+<p><strong>Q: Can I run PSMS on a headless server?</strong></p>
+<p>A: GUI is Tkinter which requires display. For headless operation, refactor main business logic into API service (Flask/FastAPI).</p>
+<p><strong>Q: How do I back up production data?</strong></p>
+<p>A: Back up: HSM configuration, audit logs, certificates, production orders, firmware binaries. Use encrypted storage for backups.</p>
+<p><strong>Q: What compliance standards does PSMS support?</strong></p>
+<p>A: Follows ISO 26262 (functional safety), ISO 27001 (security), and automotive OEM requirements. Integrates with existing compliance frameworks.</p>
+</section>
+<section id="database-questions">
+<h2>Database Questions<a class="headerlink" href="#database-questions" title="Link to this heading"></a></h2>
+<p><strong>Q: Can I use a database instead of JSON files?</strong></p>
+<p>A: Yes, PSMS can be extended with SQLite/PostgreSQL backend. See advanced configuration guide for example.</p>
+<p><strong>Q: How do I migrate existing production orders?</strong></p>
+<p>A: Export from old system to JSON, then import into PSMS. Custom scripts can convert CSV/Excel to JSON format.</p>
+<p><strong>Q: Can I archive historical orders?</strong></p>
+<p>A: Yes, implement automatic archival of completed orders to archive database. Retain for compliance (typically 7+ years).</p>
+</section>
+<section id="performance-questions">
+<h2>Performance Questions<a class="headerlink" href="#performance-questions" title="Link to this heading"></a></h2>
+<p><strong>Q: How much CPU/RAM does PSMS use?</strong></p>
+<p>A: Minimal: ~5-10% CPU during operations, ~100-150 MB RAM. Primarily limited by network latency (waiting for PKS, ECU).</p>
+<p><strong>Q: Can I process multiple vehicles simultaneously?</strong></p>
+<p>A: The GUI is single-threaded, but background operations use threads. For true parallelism, run multiple PSMS instances.</p>
+<p><strong>Q: What’s the bottleneck in the workflow?</strong></p>
+<p>A: Typically: PKS network latency (2-5s), ECU communication (3-5s per ECU), firmware flashing (5-10s). HSM operations are fastest (&lt;1s).</p>
+</section>
+<section id="support-questions">
+<h2>Support Questions<a class="headerlink" href="#support-questions" title="Link to this heading"></a></h2>
+<p><strong>Q: Where can I report security issues?</strong></p>
+<p>A: Contact security team directly. Do not post security vulnerabilities publicly. Allow 90 days for remediation before disclosure.</p>
+<p><strong>Q: Is source code available?</strong></p>
+<p>A: The codebase is in Python. Review <cite>/pcks_pks_kms.py</cite> for implementation details. Documentation in <cite>/docs/</cite>.</p>
+<p><strong>Q: How do I contribute improvements?</strong></p>
+<p>A: See <a class="reference internal" href="contributing.html"><span class="doc">Contributing</span></a> for guidelines. Submit pull requests with test coverage and documentation.</p>
+</section>
+<section id="still-have-questions">
+<h2>Still Have Questions?<a class="headerlink" href="#still-have-questions" title="Link to this heading"></a></h2>
+<p>See related documentation:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="troubleshooting.html"><span class="doc">Troubleshooting Guide</span></a> - Common issues and solutions</p></li>
+<li><p><a class="reference internal" href="architecture.html"><span class="doc">Architecture</span></a> - System design details</p></li>
+<li><p><a class="reference internal" href="workflow.html"><span class="doc">Production Workflow</span></a> - Step-by-step process</p></li>
+<li><p><a class="reference internal" href="hsm_setup.html"><span class="doc">HSM Setup and Configuration</span></a> - HSM configuration help</p></li>
+<li><p><a class="reference internal" href="pks_integration.html"><span class="doc">PKS Integration Guide</span></a> - PKS integration guide</p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Production Security Management</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hsm_setup.html">HSM Setup and Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pks_integration.html">PKS Integration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflow.html">Production Workflow</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_basic.html">Basic Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_advanced.html">Advanced Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/modules.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">FAQ &amp; Common Questions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#general-questions">General Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hsm-questions">HSM Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pks-questions">PKS Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#security-questions">Security Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#troubleshooting-questions">Troubleshooting Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#production-questions">Production Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#database-questions">Database Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#performance-questions">Performance Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#support-questions">Support Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#still-have-questions">Still Have Questions?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Additional Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References &amp; Resources</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../api/pcks_pks_kms.html" title="previous chapter">pcks_pks_kms module</a></li>
+      <li>Next: <a href="troubleshooting.html" title="next chapter">Troubleshooting Guide</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Security Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/guide/faq.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Advanced Configuration &#8212; Production Security Management 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/jquery.js?v=5d32c60e"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+    <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../api/modules.html" />
+    <link rel="prev" title="Basic Tutorial" href="tutorial_basic.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="advanced-configuration">
+<h1>Advanced Configuration<a class="headerlink" href="#advanced-configuration" title="Link to this heading"></a></h1>
+<section id="production-environment-setup">
+<h2>Production Environment Setup<a class="headerlink" href="#production-environment-setup" title="Link to this heading"></a></h2>
+<p>This guide covers advanced setup for production deployments.</p>
+</section>
+<section id="hardware-security-module-hsm-production-setup">
+<h2>Hardware Security Module (HSM) Production Setup<a class="headerlink" href="#hardware-security-module-hsm-production-setup" title="Link to this heading"></a></h2>
+<p><strong>Multi-User HSM Configuration:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create multiple PINs for different roles</span>
+softhsm2-util<span class="w"> </span>--init-token<span class="w"> </span>--slot<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--label<span class="w"> </span><span class="s2">&quot;Production_Primary&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pin<span class="w"> </span>1234567890ABC<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--so-pin<span class="w"> </span>0987654321XYZ
+</pre></div>
+</div>
+<p><strong>Key Backup and Recovery:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Export public keys for recovery</span>
+pkcs11-tool<span class="w"> </span>--list-objects<span class="w"> </span>--pin<span class="w"> </span><span class="m">1234</span>
+pkcs11-tool<span class="w"> </span>--read-object<span class="w"> </span>--type<span class="w"> </span>pubkey<span class="w"> </span>--id<span class="w"> </span><span class="m">01</span>
+</pre></div>
+</div>
+<p><strong>Performance Tuning:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reuse PKCS11 session for multiple operations</span>
+<span class="n">hsm</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+
+<span class="c1"># Perform multiple operations</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+    <span class="n">signature</span> <span class="o">=</span> <span class="n">hsm</span><span class="o">.</span><span class="n">sign_data</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;key_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">firmware_data</span><span class="p">)</span>
+
+<span class="c1"># Close when done</span>
+<span class="n">hsm</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="multi-ecu-vehicle-configuration">
+<h2>Multi-ECU Vehicle Configuration<a class="headerlink" href="#multi-ecu-vehicle-configuration" title="Link to this heading"></a></h2>
+<p><strong>Ordering File for Complex Vehicle:</strong></p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;vin&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;WVWZZZ3CZ9E234567&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ID.7&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;production_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-03-10T14:30:00&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;ecus&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EngineControl&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;part_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0ZS100001&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;hw_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;sw_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.5.0&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;security_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;requires_secure_boot&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;requires_key_injection&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TransmissionControl&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;part_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0ZS200001&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;hw_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.5&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;sw_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.8.2&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;security_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;requires_secure_boot&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;requires_key_injection&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;InfotainmentSystem&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;part_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0ZS300001&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;hw_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3.0&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;sw_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;4.2.1&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;security_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;requires_secure_boot&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;requires_key_injection&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BodyController&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;part_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0ZS400001&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;hw_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;sw_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.1.0&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;security_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;requires_secure_boot&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;requires_key_injection&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pending&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Batch Processing:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="c1"># Load all ECUs and process in sequence</span>
+<span class="n">order</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;complex_order.json&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+
+<span class="k">for</span> <span class="n">ecu</span> <span class="ow">in</span> <span class="n">order</span><span class="p">[</span><span class="s1">&#39;ecus&#39;</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">ecu</span><span class="p">[</span><span class="s1">&#39;requires_key_injection&#39;</span><span class="p">]:</span>
+        <span class="c1"># Request keys for each ECU</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="n">psms</span><span class="o">.</span><span class="n">pks</span><span class="o">.</span><span class="n">request_ecu_keys</span><span class="p">(</span>
+            <span class="n">order</span><span class="p">[</span><span class="s1">&#39;vin&#39;</span><span class="p">],</span>
+            <span class="n">ecu</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">],</span>
+            <span class="sa">f</span><span class="s2">&quot;SN-</span><span class="si">{</span><span class="n">ecu</span><span class="p">[</span><span class="s1">&#39;part_number&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="c1"># Inject into ECU</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="n">psms</span><span class="o">.</span><span class="n">inject_keys_for_ecu</span><span class="p">(</span><span class="n">ecu</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="pks-integration-with-multiple-servers">
+<h2>PKS Integration with Multiple Servers<a class="headerlink" href="#pks-integration-with-multiple-servers" title="Link to this heading"></a></h2>
+<p><strong>Fallback PKS Configuration:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">primary_pks</span> <span class="o">=</span> <span class="n">ProductionKeyServerClient</span><span class="p">(</span>
+    <span class="n">wsdl_url</span><span class="o">=</span><span class="s2">&quot;https://pks1.example.com/KeyService?wsdl&quot;</span><span class="p">,</span>
+    <span class="n">client_cert_path</span><span class="o">=</span><span class="s2">&quot;certs/client.pem&quot;</span><span class="p">,</span>
+    <span class="n">client_key_path</span><span class="o">=</span><span class="s2">&quot;certs/client.key&quot;</span>
+<span class="p">)</span>
+
+<span class="n">backup_pks</span> <span class="o">=</span> <span class="n">ProductionKeyServerClient</span><span class="p">(</span>
+    <span class="n">wsdl_url</span><span class="o">=</span><span class="s2">&quot;https://pks2.example.com/KeyService?wsdl&quot;</span><span class="p">,</span>
+    <span class="n">client_cert_path</span><span class="o">=</span><span class="s2">&quot;certs/client.pem&quot;</span><span class="p">,</span>
+    <span class="n">client_key_path</span><span class="o">=</span><span class="s2">&quot;certs/client.key&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Try primary, fall back to backup</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="n">primary_pks</span><span class="o">.</span><span class="n">request_ecu_keys</span><span class="p">(</span><span class="n">vin</span><span class="p">,</span> <span class="n">ecu_type</span><span class="p">,</span> <span class="n">serial</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Primary PKS failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">, trying backup&quot;</span><span class="p">)</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="n">backup_pks</span><span class="o">.</span><span class="n">request_ecu_keys</span><span class="p">(</span><span class="n">vin</span><span class="p">,</span> <span class="n">ecu_type</span><span class="p">,</span> <span class="n">serial</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-authentication">
+<h2>Custom Authentication<a class="headerlink" href="#custom-authentication" title="Link to this heading"></a></h2>
+<p><strong>LDAP Integration Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ldap</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">validate_operator</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate against LDAP directory&quot;&quot;&quot;</span>
+    <span class="n">ldap_server</span> <span class="o">=</span> <span class="s2">&quot;ldap://ldap.example.com&quot;</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">ldap</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">ldap_server</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">simple_bind_s</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cn=</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">,dc=example,dc=com&quot;</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="n">ldap</span><span class="o">.</span><span class="n">INVALID_CREDENTIALS</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<p><strong>Role-Based Access Control:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ROLES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;admin&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;configure_hsm&#39;</span><span class="p">,</span> <span class="s1">&#39;configure_pks&#39;</span><span class="p">,</span> <span class="s1">&#39;generate_reports&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;operator&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;request_keys&#39;</span><span class="p">,</span> <span class="s1">&#39;inject_keys&#39;</span><span class="p">,</span> <span class="s1">&#39;flash_firmware&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;auditor&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;view_logs&#39;</span><span class="p">,</span> <span class="s1">&#39;generate_reports&#39;</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_permission</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+    <span class="n">user_role</span> <span class="o">=</span> <span class="n">get_user_role</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">ROLES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">user_role</span><span class="p">,</span> <span class="p">[])</span>
+</pre></div>
+</div>
+</section>
+<section id="database-integration">
+<h2>Database Integration<a class="headerlink" href="#database-integration" title="Link to this heading"></a></h2>
+<p><strong>SQLite Backend for Production Orders:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sqlite3</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ProductionDB</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">db_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_tables</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            CREATE TABLE IF NOT EXISTS vehicles (</span>
+<span class="s2">                id INTEGER PRIMARY KEY,</span>
+<span class="s2">                vin TEXT UNIQUE,</span>
+<span class="s2">                model TEXT,</span>
+<span class="s2">                order_date TIMESTAMP,</span>
+<span class="s2">                status TEXT</span>
+<span class="s2">            )</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            CREATE TABLE IF NOT EXISTS ecu_updates (</span>
+<span class="s2">                id INTEGER PRIMARY KEY,</span>
+<span class="s2">                vehicle_id INTEGER,</span>
+<span class="s2">                ecu_type TEXT,</span>
+<span class="s2">                firmware_version TEXT,</span>
+<span class="s2">                update_date TIMESTAMP,</span>
+<span class="s2">                status TEXT,</span>
+<span class="s2">                FOREIGN KEY(vehicle_id) REFERENCES vehicles(id)</span>
+<span class="s2">            )</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">record_vehicle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vin</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="s2">&quot;INSERT INTO vehicles (vin, model, order_date, status) &quot;</span>
+            <span class="s2">&quot;VALUES (?, ?, ?, ?)&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">vin</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="s2">&quot;pending&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="automated-testing">
+<h2>Automated Testing<a class="headerlink" href="#automated-testing" title="Link to this heading"></a></h2>
+<p><strong>Test Suite Structure:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">unittest</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">unittest.mock</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mock</span><span class="p">,</span> <span class="n">patch</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TestSecureUpdate</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">SecureUpdateManager</span><span class="p">(</span><span class="n">mock_hsm</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_prepare_image_with_valid_firmware</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Test firmware image preparation&quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">prepare_secure_image</span><span class="p">(</span>
+            <span class="s1">&#39;test_firmware.bin&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;1.0.0&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;EngineControl&#39;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;signature&#39;</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_verify_image_with_invalid_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Test image verification with bad signature&quot;&quot;&quot;</span>
+        <span class="n">invalid_image</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;firmware&#39;</span><span class="p">:</span> <span class="s1">&#39;AAAA&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;signature&#39;</span><span class="p">:</span> <span class="s1">&#39;INVALID&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="p">{}</span>
+        <span class="p">}</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">verify_secure_image</span><span class="p">(</span><span class="n">invalid_image</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="continuous-integration">
+<h2>Continuous Integration<a class="headerlink" href="#continuous-integration" title="Link to this heading"></a></h2>
+<p><strong>GitHub Actions Workflow:</strong></p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Security Tests</span>
+
+<span class="nt">on</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">push</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">pull_request</span><span class="p p-Indicator">]</span>
+
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">test</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v2</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Install dependencies</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pip install -r requirements.txt pytest</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run tests</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pytest tests/</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Security scan</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bandit -r pcks_pks_kms.py</span>
+</pre></div>
+</div>
+</section>
+<section id="docker-deployment">
+<h2>Docker Deployment<a class="headerlink" href="#docker-deployment" title="Link to this heading"></a></h2>
+<p><strong>Dockerfile:</strong></p>
+<div class="highlight-dockerfile notranslate"><div class="highlight"><pre><span></span><span class="k">FROM</span><span class="w"> </span><span class="s">python:3.10-slim</span>
+
+<span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
+<span class="k">COPY</span><span class="w"> </span>requirements.txt<span class="w"> </span>.
+<span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+
+<span class="k">COPY</span><span class="w"> </span>.<span class="w"> </span>.
+
+<span class="k">EXPOSE</span><span class="w"> </span><span class="s">5000</span>
+<span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;python&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;pcks_pks_kms.py&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Docker Compose:</strong></p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3&#39;</span>
+<span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">psms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;5000:5000&quot;</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HSM_PIN=${HSM_PIN}</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PKCS11_LIB=${PKCS11_LIB}</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./logs:/app/logs</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./certs:/app/certs:ro</span>
+</pre></div>
+</div>
+</section>
+<section id="monitoring-and-alerting">
+<h2>Monitoring and Alerting<a class="headerlink" href="#monitoring-and-alerting" title="Link to this heading"></a></h2>
+<p><strong>Key Metrics to Track:</strong></p>
+<ul class="simple">
+<li><p>Total vehicles processed</p></li>
+<li><p>Key request success rate</p></li>
+<li><p>Firmware flash failures</p></li>
+<li><p>Average processing time per vehicle</p></li>
+<li><p>HSM uptime/availability</p></li>
+<li><p>PKS response times</p></li>
+<li><p>Audit log size</p></li>
+</ul>
+<p><strong>Example Metrics Collection:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MetricsCollector</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vehicles_processed</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys_requested</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys_failed</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_time</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">record_vehicle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_taken</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vehicles_processed</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_time</span> <span class="o">+=</span> <span class="n">time_taken</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_average_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">vehicles_processed</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vehicles_processed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_success_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys_requested</span>
+        <span class="k">if</span> <span class="n">total</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">100</span>
+        <span class="k">return</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys_requested</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys_failed</span><span class="p">)</span> <span class="o">/</span> <span class="n">total</span>
+</pre></div>
+</div>
+<p>See related guides: <a class="reference internal" href="architecture.html"><span class="doc">Architecture</span></a>, <a class="reference internal" href="hsm_setup.html"><span class="doc">HSM Setup and Configuration</span></a>, <a class="reference internal" href="pks_integration.html"><span class="doc">PKS Integration Guide</span></a></p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Production Security Management</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hsm_setup.html">HSM Setup and Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pks_integration.html">PKS Integration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflow.html">Production Workflow</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial_basic.html">Basic Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Advanced Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#production-environment-setup">Production Environment Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-security-module-hsm-production-setup">Hardware Security Module (HSM) Production Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#multi-ecu-vehicle-configuration">Multi-ECU Vehicle Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pks-integration-with-multiple-servers">PKS Integration with Multiple Servers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-authentication">Custom Authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#database-integration">Database Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#automated-testing">Automated Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#continuous-integration">Continuous Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#docker-deployment">Docker Deployment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#monitoring-and-alerting">Monitoring and Alerting</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/modules.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ &amp; Common Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Additional Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References &amp; Resources</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="tutorial_basic.html" title="previous chapter">Basic Tutorial</a></li>
+      <li>Next: <a href="../api/modules.html" title="next chapter">API Reference</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Security Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/guide/tutorial_advanced.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

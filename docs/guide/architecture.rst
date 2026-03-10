@@ -1,0 +1,254 @@
+Architecture
+============
+
+System Design Overview
+~~~~~~~~~~~~~~~~~~~~~~
+
+The PSMS is designed with a modular, layered architecture:
+
+.. code-block:: text
+
+    ┌─────────────────────────────────┐
+    │    GUI Application (Tkinter)    │
+    │  - User Interface               │
+    │  - Logging & Reporting          │
+    └────────────┬────────────────────┘
+                 │
+    ┌────────────┴────────────────────┐
+    │  Core Manager Layer             │
+    │  ├─ HSM Manager                 │
+    │  ├─ PKS Client                  │
+    │  └─ Update Manager              │
+    └────────────┬────────────────────┘
+                 │
+    ┌────────────┴────────────────────┐
+    │  Security & Crypto Layer        │
+    │  ├─ PKCS#11 Interface           │
+    │  ├─ RSA/AES Encryption          │
+    │  └─ Digital Signatures          │
+    └────────────┬────────────────────┘
+                 │
+    ┌────────────┴────────────────────┐
+    │  Integration Layer              │
+    │  ├─ SOAP/WS-Security            │
+    │  ├─ Mutual TLS                  │
+    │  └─ XML Processing              │
+    └─────────────────────────────────┘
+
+Core Components
+~~~~~~~~~~~~~~~
+
+**1. HSMManager**
+
+The Hardware Security Module Manager handles all HSM-related operations:
+
+- Connection management to PKCS#11 devices
+- Key generation (RSA, symmetric)
+- Digital signing operations
+- Key retrieval and management
+- Session lifecycle
+
+**Key Attributes:**
+
+- ``pkcs11_lib_path`` - Path to PKCS#11 library
+- ``slot`` - HSM slot number
+- ``pin`` - User authentication PIN
+- ``session`` - Active PKCS#11 session
+
+**Key Methods:**
+
+- ``connect()`` - Establish HSM connection
+- ``generate_key_pair()`` - Create RSA key pairs
+- ``sign_data()`` - Sign data with private key
+- ``get_public_key()`` - Retrieve public key
+
+**2. ProductionKeyServerClient**
+
+SOAP-based client for communicating with the PKS:
+
+- Mutual TLS authentication
+- WS-Security XML signatures
+- Key request/delivery
+- Injection status reporting
+
+**Key Attributes:**
+
+- ``wsdl_url`` - PKS WSDL endpoint
+- ``session`` - Requests session with certificates
+- ``transport`` - SOAP transport layer
+- ``signature`` - WS-Security signature handler
+
+**Key Methods:**
+
+- ``connect()`` - Initialize SOAP client
+- ``request_ecu_keys()`` - Request vehicle-specific keys
+- ``report_key_injection()`` - Report injection status
+
+**3. SecureUpdateManager**
+
+Manages secure firmware update lifecycle:
+
+- Firmware image preparation
+- Signature generation
+- Image verification
+- Metadata management
+
+**Key Methods:**
+
+- ``prepare_secure_image()`` - Create signed firmware package
+- ``verify_secure_image()`` - Validate image integrity
+
+**4. ProductionSecurityGUI**
+
+Main user interface with:
+
+- Session management
+- Production order handling
+- ECU configuration
+- Threading for long operations
+- Audit logging
+- Report generation
+
+Data Flow Diagrams
+~~~~~~~~~~~~~~~~~~
+
+**Key Request Flow:**
+
+.. code-block:: text
+
+    User enters VIN
+         │
+         ▼
+    Request Keys from PKS
+         │
+         ▼
+    SOAP Request with WS-Security
+         │
+         ▼
+    PKS Validates VIN & Authorization
+         │
+         ▼
+    PKS Retrieves Vehicle-Specific Keys
+         │
+         ▼
+    PKS Returns Signed Keys
+         │
+         ▼
+    Client Verifies Signature
+         │
+         ▼
+    Store Keys (encrypted)
+
+**Secure Update Flow:**
+
+.. code-block:: text
+
+    Load Firmware File
+         │
+         ▼
+    Calculate Firmware Hash
+         │
+         ▼
+    Create Signed Metadata
+         │
+         ▼
+    Sign with HSM Private Key
+         │
+         ▼
+    Package Secure Image
+         │
+         ▼
+    Transfer to ECU
+         │
+         ▼
+    ECU Verifies Signature
+         │
+         ▼
+    ECU Flashes Firmware
+
+Security Model
+~~~~~~~~~~~~~~
+
+**Authentication:**
+
+- Mutual TLS between PKS and client
+- HSM PIN-based access control
+- X.509 certificate validation
+
+**Integrity:**
+
+- RSA-2048 signatures on all operations
+- SHA-256 hash verification
+- XML signature on SOAP messages
+
+**Confidentiality:**
+
+- AES-128/256 encryption of sensitive data
+- TLS 1.2+ for network communication
+- Secure key storage in HSM
+
+**Non-repudiation:**
+
+- Comprehensive audit logging
+- Operator identification
+- Timestamp recording
+
+API Layers
+~~~~~~~~~~
+
+**External API:**
+
+- GUI controls and dialogs
+- File I/O for orders and reports
+- Error handling and user feedback
+
+**Manager API:**
+
+- HSM operations
+- PKS communication
+- Update preparation
+
+**Security API:**
+
+- Cryptographic operations
+- Key handling
+- Signature verification
+
+Threading Model
+~~~~~~~~~~~~~~~
+
+Long-running operations execute in background threads:
+
+- Key requests
+- Key injection
+- Firmware flashing
+- Report generation
+
+Main event loop remains responsive via ``queue.Queue``.
+
+Database/Storage
+~~~~~~~~~~~~~~~~
+
+**Data Structures:**
+
+- ``ECUConfig`` - ECU metadata
+- ``ProductionOrder`` - Order details
+- ``KeyInjectionRecord`` - Audit trail
+
+**File Formats:**
+
+- JSON for configuration and orders
+- PEM for certificates and keys
+- Plain text for audit logs
+
+Error Handling
+~~~~~~~~~~~~~~
+
+Comprehensive error handling with:
+
+- Exception logging
+- User notification dialogs
+- Recovery mechanisms
+- Rollback capabilities
+
+See :doc:`troubleshooting` for common issues.

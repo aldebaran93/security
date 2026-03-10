@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Production Security Management System Documentation &#8212; Production Security Management 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/jquery.js?v=5d32c60e"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+    <script src="_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Introduction" href="guide/introduction.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="production-security-management-system-documentation">
+<h1>Production Security Management System Documentation<a class="headerlink" href="#production-security-management-system-documentation" title="Link to this heading"></a></h1>
+<p>An automotive security solution for secure ECU updates, production key management, and HSM integration.</p>
+<p><strong>Core Features:</strong></p>
+<ul class="simple">
+<li><p>🔐 <strong>Secure ECU Update Management</strong> - Cryptographically signed firmware updates with verification</p></li>
+<li><p>🔑 <strong>Production Key Server (SOAP)</strong> - WS-Security integration with mutual TLS authentication</p></li>
+<li><p>🛡️ <strong>HSM (PKCS#11) Integration</strong> - Hardware-backed key storage and cryptographic operations</p></li>
+<li><p>🚗 <strong>VIN-to-Key Binding</strong> - Vehicle identification number to key mapping and lifecycle management</p></li>
+<li><p>📋 <strong>Audit Logging</strong> - Comprehensive audit trail and compliance reporting</p></li>
+</ul>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guide/introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/introduction.html#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="guide/introduction.html#what-is-psms">What is PSMS?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guide/introduction.html#system-architecture">System Architecture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guide/introduction.html#use-cases">Use Cases</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guide/introduction.html#key-features">Key Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guide/introduction.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/quick_start.html">Quick Start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/quick_start.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/quick_start.html#running-the-application">Running the Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/quick_start.html#initial-configuration">Initial Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/quick_start.html#basic-workflow">Basic Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/quick_start.html#example-production-order-file">Example Production Order File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/quick_start.html#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/requirements.html">Requirements</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/requirements.html#system-requirements">System Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/requirements.html#software-dependencies">Software Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/requirements.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/requirements.html#gui-configuration-requirements">GUI Configuration Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/requirements.html#security-considerations">Security Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/requirements.html#system-access">System Access</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guide/architecture.html">Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/architecture.html#system-design-overview">System Design Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/architecture.html#core-components">Core Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/architecture.html#data-flow-diagrams">Data Flow Diagrams</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/architecture.html#security-model">Security Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/architecture.html#api-layers">API Layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/architecture.html#threading-model">Threading Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/architecture.html#database-storage">Database/Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/architecture.html#error-handling">Error Handling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/hsm_setup.html">HSM Setup and Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/hsm_setup.html#hardware-security-module-overview">Hardware Security Module Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/hsm_setup.html#supported-hsm-devices">Supported HSM Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/hsm_setup.html#setup-instructions">Setup Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/hsm_setup.html#hsm-operations">HSM Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/hsm_setup.html#troubleshooting-hsm-connection">Troubleshooting HSM Connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/hsm_setup.html#hsm-security-best-practices">HSM Security Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/hsm_setup.html#environment-variables">Environment Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/pks_integration.html">PKS Integration Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/pks_integration.html#production-key-server-overview">Production Key Server Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/pks_integration.html#wsdl-configuration">WSDL Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/pks_integration.html#certificate-setup">Certificate Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/pks_integration.html#ws-security-configuration">WS-Security Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/pks_integration.html#key-request-workflow">Key Request Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/pks_integration.html#reporting-injection-status">Reporting Injection Status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/pks_integration.html#pks-api-reference">PKS API Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/pks_integration.html#troubleshooting-pks-connection">Troubleshooting PKS Connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/pks_integration.html#security-considerations">Security Considerations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/workflow.html">Production Workflow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/workflow.html#end-to-end-process">End-to-End Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/workflow.html#phase-1-order-reception">Phase 1: Order Reception</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/workflow.html#phase-2-key-distribution">Phase 2: Key Distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/workflow.html#phase-3-key-injection">Phase 3: Key Injection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/workflow.html#phase-4-firmware-update">Phase 4: Firmware Update</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/workflow.html#phase-5-verification">Phase 5: Verification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/workflow.html#error-handling">Error Handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/workflow.html#timeline-example">Timeline Example</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guide/tutorial_basic.html">Basic Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_basic.html#getting-your-first-vehicle-secured">Getting Your First Vehicle Secured</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_basic.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_basic.html#step-1-load-the-production-order">Step 1: Load the Production Order</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_basic.html#step-2-request-keys-from-pks">Step 2: Request Keys from PKS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_basic.html#step-3-inject-keys-into-ecu-simulated">Step 3: Inject Keys into ECU (Simulated)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_basic.html#step-4-prepare-secure-firmware-image">Step 4: Prepare Secure Firmware Image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_basic.html#step-5-flash-firmware-simulated">Step 5: Flash Firmware (Simulated)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_basic.html#step-6-verify-installation">Step 6: Verify Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_basic.html#step-7-generate-audit-report">Step 7: Generate Audit Report</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_basic.html#troubleshooting-this-tutorial">Troubleshooting This Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_basic.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/tutorial_advanced.html">Advanced Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_advanced.html#production-environment-setup">Production Environment Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_advanced.html#hardware-security-module-hsm-production-setup">Hardware Security Module (HSM) Production Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_advanced.html#multi-ecu-vehicle-configuration">Multi-ECU Vehicle Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_advanced.html#pks-integration-with-multiple-servers">PKS Integration with Multiple Servers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_advanced.html#custom-authentication">Custom Authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_advanced.html#database-integration">Database Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_advanced.html#automated-testing">Automated Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_advanced.html#continuous-integration">Continuous Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_advanced.html#docker-deployment">Docker Deployment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/tutorial_advanced.html#monitoring-and-alerting">Monitoring and Alerting</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/pcks_pks_kms.html">pcks_pks_kms module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/pcks_pks_kms.html#pcks_pks_kms.ECUConfig"><code class="docutils literal notranslate"><span class="pre">ECUConfig</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pcks_pks_kms.html#pcks_pks_kms.ProductionOrder"><code class="docutils literal notranslate"><span class="pre">ProductionOrder</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pcks_pks_kms.html#pcks_pks_kms.KeyInjectionRecord"><code class="docutils literal notranslate"><span class="pre">KeyInjectionRecord</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pcks_pks_kms.html#pcks_pks_kms.HSMManager"><code class="docutils literal notranslate"><span class="pre">HSMManager</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pcks_pks_kms.html#pcks_pks_kms.ProductionKeyServerClient"><code class="docutils literal notranslate"><span class="pre">ProductionKeyServerClient</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pcks_pks_kms.html#pcks_pks_kms.SecureUpdateManager"><code class="docutils literal notranslate"><span class="pre">SecureUpdateManager</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pcks_pks_kms.html#pcks_pks_kms.ProductionSecurityGUI"><code class="docutils literal notranslate"><span class="pre">ProductionSecurityGUI</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pcks_pks_kms.html#pcks_pks_kms.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pcks_pks_kms.html#data-models">Data Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pcks_pks_kms.html#hardware-security-module">Hardware Security Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pcks_pks_kms.html#production-key-server">Production Key Server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pcks_pks_kms.html#secure-update-management">Secure Update Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pcks_pks_kms.html#user-interface">User Interface</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guide/faq.html">FAQ &amp; Common Questions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/faq.html#general-questions">General Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/faq.html#hsm-questions">HSM Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/faq.html#pks-questions">PKS Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/faq.html#security-questions">Security Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/faq.html#troubleshooting-questions">Troubleshooting Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/faq.html#production-questions">Production Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/faq.html#database-questions">Database Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/faq.html#performance-questions">Performance Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/faq.html#support-questions">Support Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/faq.html#still-have-questions">Still Have Questions?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/troubleshooting.html">Troubleshooting Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/troubleshooting.html#connection-issues">Connection Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/troubleshooting.html#pks-connection-issues">PKS Connection Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/troubleshooting.html#firmware-update-issues">Firmware Update Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/troubleshooting.html#logging-and-audit">Logging and Audit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/troubleshooting.html#performance-issues">Performance Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/troubleshooting.html#database-file-issues">Database/File Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/troubleshooting.html#security-issues">Security Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/troubleshooting.html#getting-help">Getting Help</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Additional Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guide/contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/contributing.html#how-to-contribute">How to Contribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/contributing.html#development-setup">Development Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/contributing.html#code-style">Code Style</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/contributing.html#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/contributing.html#testing">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/contributing.html#commit-guidelines">Commit Guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/contributing.html#pull-request-process">Pull Request Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/contributing.html#review-process">Review Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/contributing.html#security-issues">Security Issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/contributing.html#areas-for-contribution">Areas for Contribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/contributing.html#building-documentation-locally">Building Documentation Locally</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/contributing.html#licensing">Licensing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/contributing.html#code-of-conduct">Code of Conduct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/contributing.html#questions">Questions?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/references.html">References &amp; Resources</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/references.html#standards-specifications">Standards &amp; Specifications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/references.html#python-libraries">Python Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/references.html#hardware">Hardware</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/references.html#documentation-guides">Documentation &amp; Guides</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/references.html#tools-utilities">Tools &amp; Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/references.html#related-projects">Related Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/references.html#performance-benchmarks">Performance Benchmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/references.html#best-practices">Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/references.html#industry-contacts">Industry Contacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/references.html#online-resources">Online Resources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/references.html#changelog">Changelog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/references.html#support-contact">Support &amp; Contact</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and Tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">Production Security Management</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guide/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/quick_start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/requirements.html">Requirements</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guide/architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/hsm_setup.html">HSM Setup and Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/pks_integration.html">PKS Integration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/workflow.html">Production Workflow</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guide/tutorial_basic.html">Basic Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/tutorial_advanced.html">Advanced Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guide/faq.html">FAQ &amp; Common Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/troubleshooting.html">Troubleshooting Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Additional Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guide/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/references.html">References &amp; Resources</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="guide/introduction.html" title="next chapter">Introduction</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Security Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

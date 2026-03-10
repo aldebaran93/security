@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>HSM Setup and Configuration &#8212; Production Security Management 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/jquery.js?v=5d32c60e"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+    <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="PKS Integration Guide" href="pks_integration.html" />
+    <link rel="prev" title="Architecture" href="architecture.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="hsm-setup-and-configuration">
+<h1>HSM Setup and Configuration<a class="headerlink" href="#hsm-setup-and-configuration" title="Link to this heading"></a></h1>
+<section id="hardware-security-module-overview">
+<h2>Hardware Security Module Overview<a class="headerlink" href="#hardware-security-module-overview" title="Link to this heading"></a></h2>
+<p>An HSM is a dedicated cryptographic processor that provides:</p>
+<ul class="simple">
+<li><p>Tamper-resistant key storage</p></li>
+<li><p>Certified encryption operations</p></li>
+<li><p>Access control and audit logging</p></li>
+<li><p>FIPS 140-2 compliance</p></li>
+</ul>
+</section>
+<section id="supported-hsm-devices">
+<h2>Supported HSM Devices<a class="headerlink" href="#supported-hsm-devices" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Device</p></th>
+<th class="head"><p>PKCS#11 Library</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Thales Luna</p></td>
+<td><p>crystoki.dll/so</p></td>
+<td><p>Enterprise HSM</p></td>
+</tr>
+<tr class="row-odd"><td><p>Gemalto/SafeNet</p></td>
+<td><p>GTwcsm.dll/so</p></td>
+<td><p>Common automotive grade</p></td>
+</tr>
+<tr class="row-even"><td><p>YubiHSM</p></td>
+<td><p>yubihsm-pkcs11.dll</p></td>
+<td><p>Cost-effective</p></td>
+</tr>
+<tr class="row-odd"><td><p>SoftHSM</p></td>
+<td><p>softhsm2.dll/so</p></td>
+<td><p>Testing/development</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="setup-instructions">
+<h2>Setup Instructions<a class="headerlink" href="#setup-instructions" title="Link to this heading"></a></h2>
+<p><strong>Using SoftHSM 2 (for testing/development)</strong></p>
+<ol class="arabic">
+<li><p><strong>Install SoftHSM:</strong></p>
+<p><em>Windows:</em></p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">choco</span> <span class="n">install</span> <span class="n">softhsm</span>
+</pre></div>
+</div>
+<p><em>Linux:</em></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>softhsm2
+</pre></div>
+</div>
+<p><em>macOS:</em></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>brew<span class="w"> </span>install<span class="w"> </span>softhsm
+</pre></div>
+</div>
+</li>
+<li><p><strong>Initialize Token:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>softhsm2-util<span class="w"> </span>--init-token<span class="w"> </span>--slot<span class="w"> </span><span class="m">0</span><span class="w"> </span>--label<span class="w"> </span><span class="s2">&quot;PSMS&quot;</span><span class="w"> </span>--pin<span class="w"> </span><span class="m">1234</span><span class="w"> </span>--so-pin<span class="w"> </span><span class="m">1234</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Locate Library:</strong></p>
+<ul class="simple">
+<li><p><em>Windows:</em> <code class="docutils literal notranslate"><span class="pre">C:\Program</span> <span class="pre">Files\SoftHSM2\lib\softhsm2.dll</span></code></p></li>
+<li><p><em>Linux:</em> <code class="docutils literal notranslate"><span class="pre">/usr/lib/softhsm/libsofthsm2.so</span></code></p></li>
+<li><p><em>macOS:</em> <code class="docutils literal notranslate"><span class="pre">/usr/local/lib/softhsm/libsofthsm2.dylib</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>Configure in PSMS:</strong></p>
+<ul class="simple">
+<li><p>Go to <strong>Tools</strong> → <strong>HSM Configuration</strong></p></li>
+<li><p>Enter the library path from above</p></li>
+<li><p>Slot: <code class="docutils literal notranslate"><span class="pre">0</span></code></p></li>
+<li><p>PIN: <code class="docutils literal notranslate"><span class="pre">1234</span></code> (or your chosen PIN)</p></li>
+<li><p>Click “Connect”</p></li>
+</ul>
+</li>
+</ol>
+<p><strong>Using Production HSM (Thales Luna)</strong></p>
+<ol class="arabic">
+<li><p><strong>Install Luna Client:</strong></p>
+<p>Download from Thales support portal and install</p>
+</li>
+<li><p><strong>Initialize HSM:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>lunacm
+<span class="c1"># At prompt: open session</span>
+<span class="c1"># Initialize: hsm login</span>
+<span class="c1"># Create partition if needed</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Get Slot Number:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>lunacm
+<span class="c1"># hsm showinfo</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Find Library Path:</strong></p>
+<ul class="simple">
+<li><p>Windows: <code class="docutils literal notranslate"><span class="pre">C:\Program</span> <span class="pre">Files</span> <span class="pre">(x86)\Thales\CryptoComply\Luna\lib\crystoki.dll</span></code></p></li>
+<li><p>Linux: Usually installed in system path</p></li>
+</ul>
+</li>
+<li><p><strong>Configure in PSMS:</strong></p>
+<ul class="simple">
+<li><p><strong>HSM Configuration</strong> dialog</p></li>
+<li><p>Use crystoki.dll path and correct slot</p></li>
+<li><p>Use your Luna PIN</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="hsm-operations">
+<h2>HSM Operations<a class="headerlink" href="#hsm-operations" title="Link to this heading"></a></h2>
+<p><strong>Key Generation:</strong></p>
+<p>The system supports:</p>
+<ul class="simple">
+<li><p><strong>RSA-2048</strong> - Primary algorithm for signatures</p></li>
+<li><p><strong>RSA-4096</strong> - High-security variant</p></li>
+<li><p><strong>AES-128/256</strong> - Symmetric encryption</p></li>
+</ul>
+<p>Keys generated in HSM are:</p>
+<ul class="simple">
+<li><p>Never exported from HSM</p></li>
+<li><p>Bound to specific HSM token</p></li>
+<li><p>Protected by PIN</p></li>
+<li><p>Auditable</p></li>
+</ul>
+<p><strong>Key Storage:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate key pair</span>
+<span class="n">keys</span> <span class="o">=</span> <span class="n">hsm</span><span class="o">.</span><span class="n">generate_key_pair</span><span class="p">(</span>
+    <span class="n">key_label</span><span class="o">=</span><span class="s2">&quot;production_key_001&quot;</span><span class="p">,</span>
+    <span class="n">key_type</span><span class="o">=</span><span class="s2">&quot;RSA&quot;</span><span class="p">,</span>
+    <span class="n">key_size</span><span class="o">=</span><span class="mi">2048</span>
+<span class="p">)</span>
+
+<span class="c1"># Keys are stored in HSM</span>
+<span class="c1"># Only public key is returned</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="s1">&#39;public_key_pem&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p><strong>Signing Operations:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sign firmware metadata</span>
+<span class="n">signature</span> <span class="o">=</span> <span class="n">hsm</span><span class="o">.</span><span class="n">sign_data</span><span class="p">(</span>
+    <span class="n">key_label</span><span class="o">=</span><span class="s2">&quot;production_key_001&quot;</span><span class="p">,</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">firmware_metadata</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="troubleshooting-hsm-connection">
+<h2>Troubleshooting HSM Connection<a class="headerlink" href="#troubleshooting-hsm-connection" title="Link to this heading"></a></h2>
+<p><strong>Issue: “Failed to connect to HSM”</strong></p>
+<ol class="arabic">
+<li><p>Verify PKCS#11 library path is correct:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">lib_path</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+<li><p>Ensure library has correct architecture (32/64-bit)</p></li>
+<li><p>For Windows, verify Visual C++ Redistributable installed</p></li>
+</ol>
+<p><strong>Issue: “Slot not found”</strong></p>
+<ol class="arabic">
+<li><p>Check HSM is connected/powered on</p></li>
+<li><p>List available slots:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># For SoftHSM</span>
+softhsm2-util<span class="w"> </span>--show-slots
+</pre></div>
+</div>
+</li>
+<li><p>Try slot 0 first, then increment</p></li>
+</ol>
+<p><strong>Issue: “PIN verification failed”</strong></p>
+<ol class="arabic simple">
+<li><p>Verify PIN is correct (case-sensitive)</p></li>
+<li><p>Check if token is locked (too many attempts)</p></li>
+<li><p>For SoftHSM, default PIN is often “1234”</p></li>
+</ol>
+<p><strong>Issue: “Token not initialized”</strong></p>
+<ol class="arabic">
+<li><p>Initialize token:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>softhsm2-util<span class="w"> </span>--init-token<span class="w"> </span>--slot<span class="w"> </span><span class="m">0</span><span class="w"> </span>--label<span class="w"> </span><span class="s2">&quot;Test&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Set PIN when prompted</p></li>
+</ol>
+</section>
+<section id="hsm-security-best-practices">
+<h2>HSM Security Best Practices<a class="headerlink" href="#hsm-security-best-practices" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>PIN Management:</strong></p>
+<ul class="simple">
+<li><p>Use strong, random PINs (16+ characters)</p></li>
+<li><p>Change regularly (annually minimum)</p></li>
+<li><p>Never hardcode in source</p></li>
+<li><p>Store securely (environment variables)</p></li>
+</ul>
+</li>
+<li><p><strong>Key Lifecycle:</strong></p>
+<ul class="simple">
+<li><p>Rotate keys periodically</p></li>
+<li><p>Archive old keys securely</p></li>
+<li><p>Track key usage in audit logs</p></li>
+<li><p>Retire keys when no longer needed</p></li>
+</ul>
+</li>
+<li><p><strong>Physical HSM:</strong></p>
+<ul class="simple">
+<li><p>Keep in physically secure location</p></li>
+<li><p>Limit access to authorized personnel</p></li>
+<li><p>Monitor for tampering alerts</p></li>
+<li><p>Maintain backup HSM</p></li>
+</ul>
+</li>
+<li><p><strong>Disaster Recovery:</strong></p>
+<ul class="simple">
+<li><p>Export public keys for recovery</p></li>
+<li><p>Maintain HSM backups</p></li>
+<li><p>Document token configuration</p></li>
+<li><p>Test recovery procedures</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="environment-variables">
+<h2>Environment Variables<a class="headerlink" href="#environment-variables" title="Link to this heading"></a></h2>
+<p>Set sensitive configuration via environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Windows</span>
+<span class="nb">set</span><span class="w"> </span><span class="nv">HSM_PIN</span><span class="o">=</span><span class="m">1234</span>
+<span class="nb">set</span><span class="w"> </span><span class="nv">PKCS11_LIB</span><span class="o">=</span>C:<span class="se">\P</span>rogram<span class="w"> </span>Files<span class="se">\S</span>oftHSM2<span class="se">\l</span>ib<span class="se">\s</span>ofthsm2.dll
+
+<span class="c1"># Linux/macOS</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">HSM_PIN</span><span class="o">=</span><span class="m">1234</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">PKCS11_LIB</span><span class="o">=</span>/usr/lib/softhsm/libsofthsm2.so
+</pre></div>
+</div>
+<p>Access from code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="n">hsm</span> <span class="o">=</span> <span class="n">HSMManager</span><span class="p">(</span>
+    <span class="n">pkcs11_lib_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PKCS11_LIB&#39;</span><span class="p">),</span>
+    <span class="n">pin</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;HSM_PIN&#39;</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Production Security Management</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">HSM Setup and Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-security-module-overview">Hardware Security Module Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#supported-hsm-devices">Supported HSM Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setup-instructions">Setup Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hsm-operations">HSM Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#troubleshooting-hsm-connection">Troubleshooting HSM Connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hsm-security-best-practices">HSM Security Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pks_integration.html">PKS Integration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflow.html">Production Workflow</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_basic.html">Basic Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_advanced.html">Advanced Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/modules.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Troubleshooting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ &amp; Common Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Additional Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References &amp; Resources</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="architecture.html" title="previous chapter">Architecture</a></li>
+      <li>Next: <a href="pks_integration.html" title="next chapter">PKS Integration Guide</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Security Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/guide/hsm_setup.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
