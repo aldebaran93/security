@@ -1,0 +1,15 @@
+{
+  "vin": "TEST123456789012",
+  "model": "TestVehicle",
+  "production_date": "2024-03-10T09:00:00",
+  "ecus": [
+    {
+      "type": "EngineControl",
+      "part_number": "ECU001",
+      "hw_version": "1.0",
+      "sw_version": "1.0.0",
+      "security_level": 2
+    }
+  ],
+  "status": "pending"
+}
