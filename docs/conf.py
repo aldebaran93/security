@@ -48,16 +48,12 @@ html_theme = 'sphinx_rtd_theme'
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # Optional but recommended for better search
 html_theme_options = {
-    'navigation_depth': 4,
-    'collapse_navigation': False,
-    'sticky_navigation': True,
-    'includehidden': True,
-    "style_external_links": True,
-    'titles_only': False
+    "navigation_depth": 4,
+    "collapse_navigation": False,
+    "sticky_navigation": True,
 }
 
 html_static_path = ['_static']
-
 html_css_files = [
     'custom.css',
 ]
@@ -79,5 +75,5 @@ html_theme_options = {
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_logo = "_static/logo.jpg"
-html_theme = 'alabaster'
-html_static_path = ['_static']
+#html_theme = 'alabaster'
+#html_static_path = ['_static']

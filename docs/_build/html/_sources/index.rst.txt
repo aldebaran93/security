@@ -18,7 +18,7 @@ An automotive security solution for secure ECU updates, production key managemen
 - 📋 **Audit Logging** - Comprehensive audit trail and compliance reporting
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: Getting Started
 
    guide/introduction
@@ -26,7 +26,7 @@ An automotive security solution for secure ECU updates, production key managemen
    guide/requirements
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: User Guide
 
    guide/architecture
@@ -35,14 +35,14 @@ An automotive security solution for secure ECU updates, production key managemen
    guide/workflow
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: Tutorials
 
    guide/tutorial_basic
    guide/tutorial_advanced
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: API Reference
 
    api/modules

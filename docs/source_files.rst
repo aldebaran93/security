@@ -4,11 +4,11 @@ Source Files
 Main Application
 ----------------
 
-.. include:: ../pcks_pks_kms.py
+.. include:: ../src/psm_gui/production_security_management_GUI.py
    :code: python
 
 Parser
 ------
 
-.. include:: ../parseCAN.py
+.. include:: ../src/can_analysis/parseCAN.py
    :code: python
