@@ -28,7 +28,7 @@ from zeep.wsse.signature import Signature
 from zeep.transports import Transport
 from requests import Session
 import pkcs11
-from pkcs11 import KeyType, Mechanism, Attribute
+from pkcs11 import KeyType, ObjectClass, Mechanism, Attribute
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -184,19 +184,22 @@ class HSMManager:
         try:
             if key_type.upper() == "RSA":
                 # Generate RSA key pair
-                public_key, private_key = self.session.generate_key_pair(
+                public_key, private_key = self.session.generate_keypair(
                     KeyType.RSA,
                     key_size,
+                    id=key_label.encode(),
                     label=key_label,
                     store=True,
-                    id=key_label.encode(),
-                    # Key usage flags
-                    encrypt=True,
-                    decrypt=True,
-                    sign=True,
-                    verify=True,
-                    wrap=True,
-                    unwrap=True
+                    public_template={
+                        Attribute.VERIFY: True,
+                        Attribute.ENCRYPT: True,
+                        Attribute.WRAP: True,
+                    },
+                    private_template={
+                        Attribute.SIGN: True,
+                        Attribute.DECRYPT: True,
+                        Attribute.UNWRAP: True,
+                    }
                 )
                 
                 # Export public key for external use
@@ -231,14 +234,28 @@ class HSMManager:
         try:
             # Find private key by label
             private_key = self.session.get_key(
-                key_type=KeyType.PRIVATE_KEY,
+                object_class=ObjectClass.PRIVATE_KEY,
+                key_type=KeyType.RSA,
                 label=key_label
             )
-            
-            # Sign data
+
+        except pkcs11.exceptions.NoSuchKey:
+            self.logger.warning("Private key '%s' not found, generating new RSA key pair", key_label)
+            self.generate_key_pair(key_label, key_type="RSA", key_size=2048)
+            private_key = self.session.get_key(
+                object_class=ObjectClass.PRIVATE_KEY,
+                key_type=KeyType.RSA,
+                label=key_label
+            )
+
+        except Exception as e:
+            self.logger.error(f"Signing failed: {e}")
+            raise
+
+        try:
             signature = private_key.sign(data, mechanism=mechanism)
             return signature
-            
+
         except Exception as e:
             self.logger.error(f"Signing failed: {e}")
             raise
@@ -249,13 +266,29 @@ class HSMManager:
         """
         try:
             public_key = self.session.get_key(
-                key_type=KeyType.PUBLIC_KEY,
+                object_class=ObjectClass.PUBLIC_KEY,
+                key_type=KeyType.RSA,
                 label=key_label
             )
-            return public_key[Attribute.VALUE]
-            
+
+        except pkcs11.exceptions.NoSuchKey:
+            self.logger.warning("Public key '%s' not found, generating key pair", key_label)
+            self.generate_key_pair(key_label, key_type="RSA", key_size=2048)
+            public_key = self.session.get_key(
+                object_class=ObjectClass.PUBLIC_KEY,
+                key_type=KeyType.RSA,
+                label=key_label
+            )
+
         except Exception as e:
             self.logger.error(f"Failed to get public key: {e}")
+            raise
+
+        try:
+            return public_key[Attribute.VALUE]
+
+        except Exception as e:
+            self.logger.error(f"Failed to extract public key value: {e}")
             raise
 
 
@@ -1280,7 +1313,7 @@ class ProductionSecurityGUI:
         
         dialog = tk.Toplevel(self.root)
         dialog.title("Prepare Secure Update")
-        dialog.geometry("500x200")
+        dialog.geometry("500x250")
         
         ttk.Label(dialog, text="Firmware File:").pack(pady=5)
         firmware_path = ttk.Entry(dialog, width=50)
@@ -1301,26 +1334,36 @@ class ProductionSecurityGUI:
                 return
             
             ecu_type = self.ecu_tree.item(selection[0])['values'][0]
-            
+            firmware_file = firmware_path.get().strip()
+            version_text = version.get().strip()
+
+            if not firmware_file:
+                messagebox.showwarning("Warning", "Please select a firmware file")
+                return
+
+            if not version_text:
+                messagebox.showwarning("Warning", "Please enter a version")
+                return
+
             self.progress.start()
             
             def task():
                 try:
                     secure_image = self.update_manager.prepare_secure_image(
-                        firmware_path.get(),
-                        version.get(),
+                        firmware_file,
+                        version_text,
                         ecu_type
                     )
                     
                     # Save secure image
-                    output_path = f"secure_image_{ecu_type}_{version.get()}.json"
+                    output_path = f"secure_image_{ecu_type}_{version_text}.json"
                     with open(output_path, 'w') as f:
                         json.dump(secure_image, f, indent=2)
                     
                     self.root.after(0, lambda: self.progress.stop())
                     self.root.after(0, lambda: messagebox.showinfo(
                         "Success", f"Secure image saved to {output_path}"))
-                    logging.info(f"Secure image prepared for {ecu_type} v{version.get()}")
+                    logging.info(f"Secure image prepared for {ecu_type} v{version_text}")
                     
                 except Exception as e:
                     self.root.after(0, lambda: self.progress.stop())
