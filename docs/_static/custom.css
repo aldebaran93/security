@@ -1,24 +1,47 @@
-/* Sidebar background */
+/* Sidebar gradient background */
 .wy-nav-side {
-    background: linear-gradient(#3b82b3, #2b2b2b);
+    background: linear-gradient(180deg,#3b83bd 0%, #2b2b2b 70%);
 }
 
-/* Sidebar text */
-.wy-menu-vertical a {
-    color: #ffffff;
-}
-
-/* Hover color */
-.wy-menu-vertical a:hover {
-    background: rgba(255,255,255,0.1);
-}
-
-/* Header */
+/* Top sidebar header */
 .wy-side-nav-search {
-    background-color: #3b82b3;
+    background-color: #3b83bd;
+    text-align: center;
+}
+
+/* Project title */
+.wy-side-nav-search > a {
+    font-weight: 600;
+    font-size: 18px;
 }
 
 /* Search box */
 .wy-side-nav-search input[type=text] {
-    border-radius: 20px;
+    border-radius: 25px;
+    padding: 6px 10px;
+}
+
+/* Sidebar links */
+.wy-menu-vertical a {
+    color: #ffffff;
+}
+
+/* Hover effect */
+.wy-menu-vertical a:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+/* Active navigation item */
+.wy-menu-vertical li.current > a {
+    background: rgba(0,0,0,0.3);
+}
+
+/* Sidebar width similar to openEMS */
+.wy-nav-side {
+    width: 320px;
+}
+
+/* Adjust main content margin */
+.wy-nav-content-wrap {
+    margin-left: 320px;
 }

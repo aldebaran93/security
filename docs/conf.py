@@ -52,6 +52,7 @@ html_theme_options = {
     'collapse_navigation': False,
     'sticky_navigation': True,
     'includehidden': True,
+    "style_external_links": True,
     'titles_only': False
 }
 
