@@ -46,8 +46,6 @@ autodoc_default_options = {
 # Use Read the Docs theme (RTD)
 html_theme = 'sphinx_rtd_theme'
 
-html_theme_path = [html_theme.get_html_theme_path()]
-
 # Optional but recommended for better search
 html_theme_options = {
     'navigation_depth': 4,
