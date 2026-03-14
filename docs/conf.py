@@ -45,7 +45,7 @@ autodoc_default_options = {
 
 # Use Read the Docs theme (RTD)
 html_theme = 'sphinx_rtd_theme'
-
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # Optional but recommended for better search
 html_theme_options = {
     'navigation_depth': 4,
@@ -56,6 +56,10 @@ html_theme_options = {
 }
 
 html_static_path = ['_static']
+
+html_css_files = [
+    'custom.css',
+]
 
 html_theme_options = {
     'logo_only': False,
@@ -73,5 +77,6 @@ html_theme_options = {
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+html_logo = "_static/logo.jpg"
 html_theme = 'alabaster'
 html_static_path = ['_static']
