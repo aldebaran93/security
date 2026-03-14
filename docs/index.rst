@@ -1,6 +1,12 @@
 Production Security Management System Documentation
 =====================================================
 
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   self
+
 An automotive security solution for secure ECU updates, production key management, and HSM integration.
 
 **Core Features:**
@@ -61,4 +67,3 @@ Indices and Tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

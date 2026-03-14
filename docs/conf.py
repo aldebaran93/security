@@ -16,6 +16,7 @@ release = '1.0'
 
 import os
 import sys
+import sphinx_rtd_theme
 
 # Add parent directory to path to find modules
 sys.path.insert(0, os.path.abspath('..'))
@@ -44,6 +45,17 @@ autodoc_default_options = {
 
 # Use Read the Docs theme (RTD)
 html_theme = 'sphinx_rtd_theme'
+
+html_theme_path = [html_theme.get_html_theme_path()]
+
+# Optional but recommended for better search
+html_theme_options = {
+    'navigation_depth': 4,
+    'collapse_navigation': False,
+    'sticky_navigation': True,
+    'includehidden': True,
+    'titles_only': False
+}
 
 html_static_path = ['_static']
 
